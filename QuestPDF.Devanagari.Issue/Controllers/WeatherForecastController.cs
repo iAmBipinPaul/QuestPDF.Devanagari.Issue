@@ -2,7 +2,7 @@ using Microsoft.AspNetCore.Mvc;
 using QuestPDF.Fluent;
 using QuestPDF.Helpers;
 using QuestPDF.Infrastructure;
-
+using QuestPDF.Drawing;
 namespace QuestPDF.Devanagari.Issue.Controllers;
 
 [ApiController]
@@ -15,9 +15,16 @@ public class WeatherForecastController : ControllerBase
     };
 
     private readonly ILogger<WeatherForecastController> _logger;
+    private readonly string _fontName;
 
     public WeatherForecastController(ILogger<WeatherForecastController> logger)
     {
+        //read file from output directory
+        var  fileBytes = System.IO.File.OpenRead("NotoSansDevanagari-Regular.ttf");
+        //register using font manager
+        FontManager.RegisterFont(fileBytes);
+        _fontName = "Noto Sans Devanagari";
+        
         QuestPDF.Settings.CheckIfAllTextGlyphsAreAvailable = false;
         QuestPDF.Settings.License = LicenseType.Community;
         _logger = logger;
@@ -43,6 +50,7 @@ public class WeatherForecastController : ControllerBase
             container
                 .Page(page =>
                 {
+                    page .DefaultTextStyle(text => text.FontFamily(_fontName));
                     page.Size(PageSizes.A4); ;
                     page.Content()
                         .Column(x =>
